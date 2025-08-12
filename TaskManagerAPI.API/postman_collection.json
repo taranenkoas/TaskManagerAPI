@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "TaskManagerAPI - TaskItems",
+    "_postman_id": "4bca14c8-bf2b-4a71-a4fb-85df42d37e21",
+    "description": "Тестирование CRUD операций для TaskItemsController",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET All TaskItems",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7009/api/TaskItems",
+          "protocol": "https",
+          "host": [ "localhost" ],
+          "port": "7009",
+          "path": [ "api", "TaskItems" ]
+        }
+      }
+    },
+    {
+      "name": "POST Create TaskItem",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"title\": \"Первая задача\",\n    \"description\": \"Тест через Postman\"\n}"
+        },
+        "url": {
+          "raw": "https://localhost:7009/api/TaskItems",
+          "protocol": "https",
+          "host": [ "localhost" ],
+          "port": "7009",
+          "path": [ "api", "TaskItems" ]
+        }
+      }
+    },
+    {
+      "name": "GET TaskItem by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7009/api/TaskItems/1",
+          "protocol": "https",
+          "host": [ "localhost" ],
+          "port": "7009",
+          "path": [ "api", "TaskItems", "1" ]
+        }
+      }
+    },
+    {
+      "name": "PUT Update TaskItem",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"id\": 1,\n    \"title\": \"Обновлённая задача\",\n    \"description\": \"Теперь другое описание\",\n    \"status\": 1\n}"
+        },
+        "url": {
+          "raw": "https://localhost:7009/api/TaskItems/1",
+          "protocol": "https",
+          "host": [ "localhost" ],
+          "port": "7009",
+          "path": [ "api", "TaskItems", "1" ]
+        }
+      }
+    },
+    {
+      "name": "DELETE TaskItem",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7009/api/TaskItems/1",
+          "protocol": "https",
+          "host": [ "localhost" ],
+          "port": "7009",
+          "path": [ "api", "TaskItems", "1" ]
+        }
+      }
+    }
+  ]
+}
