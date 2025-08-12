@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TaskManagerAPI.Application\TaskManagerAPI.Application.csproj" />
+    <ProjectReference Include="..\TaskManagerAPI.Infrastructure\TaskManagerAPI.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
