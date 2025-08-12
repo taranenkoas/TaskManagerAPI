@@ -2,7 +2,7 @@
 
 public enum TaskStatus { New = 0, InProgress = 1, Done = 2 }
 
-internal class TaskItem
+public class TaskItem
 {
     public int Id { get; set; }
     public string Title { get; set; } = null!;
