@@ -1,81 +1,78 @@
 ﻿namespace TaskManagerAPI.API.Controllers;
 
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TaskManagerAPI.Application.DTO;
 using TaskManagerAPI.Domain.Entities;
 using TaskManagerAPI.Infrastructure.Data;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TaskItemsController : ControllerBase
+public class TaskItemsController(ApplicationDbContext context, IMapper mapper) : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-
-    public TaskItemsController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
+    private readonly ApplicationDbContext _context = context;
+    private readonly IMapper _mapper = mapper;
 
     // GET: api/taskitems
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TaskItem>>> GetTaskItems()
+    public async Task<ActionResult<IEnumerable<TaskItemDTO>>> GetAll()
     {
-        return await _context.TaskItems.ToListAsync();
+        var tasks = await _context.TaskItems.ToListAsync();
+
+        return Ok(_mapper.Map<IEnumerable<TaskItemDTO>>(tasks));
     }
 
     // GET: api/taskitems/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<TaskItem>> GetTaskItem(int id)
+    public async Task<ActionResult<TaskItemDTO>> Get(int id)
     {
-        var taskItem = await _context.TaskItems.FindAsync(id);
-        if (taskItem == null)
+        var task = await _context.TaskItems.FindAsync(id);
+
+        if (task == null)
             return NotFound();
 
-        return taskItem;
+        return Ok(_mapper.Map<TaskItemDTO>(task));
     }
 
     // POST: api/taskitems
     [HttpPost]
-    public async Task<ActionResult<TaskItem>> CreateTaskItem(TaskItem taskItem)
+    public async Task<ActionResult<TaskItemDTO>> Create(CreateTaskItemDTO dto)
     {
-        _context.TaskItems.Add(taskItem);
+        var task = _mapper.Map<TaskItem>(dto);
+        _context.TaskItems.Add(task);
         await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetTaskItem), new { id = taskItem.Id }, taskItem);
+
+        var resultDto = _mapper.Map<TaskItemDTO>(task);
+
+        return CreatedAtAction(nameof(Get), new { id = task.Id }, resultDto);
     }
 
     // PUT: api/taskitems/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTaskItem(int id, TaskItem taskItem)
+    public async Task<IActionResult> Update(int id, TaskItemDTO dto)
     {
-        if (id != taskItem.Id)
-            return BadRequest();
+        var task = await _context.TaskItems.FindAsync(id);
 
-        _context.Entry(taskItem).State = EntityState.Modified;
+        if (task == null)
+            return NotFound();
 
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!_context.TaskItems.Any(e => e.Id == id))
-                return NotFound();
-            else
-                throw;
-        }
+        _mapper.Map(dto, task);
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }
 
     // DELETE: api/taskitems/5
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteTaskItem(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var taskItem = await _context.TaskItems.FindAsync(id);
-        if (taskItem == null)
+        var task = await _context.TaskItems.FindAsync(id);
+
+        if (task == null)
             return NotFound();
 
-        _context.TaskItems.Remove(taskItem);
+        _context.TaskItems.Remove(task);
         await _context.SaveChangesAsync();
 
         return NoContent();

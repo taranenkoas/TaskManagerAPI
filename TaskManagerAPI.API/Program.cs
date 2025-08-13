@@ -1,7 +1,9 @@
 namespace TaskManagerAPI.API;
 
-using TaskManagerAPI.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using TaskManagerAPI.Application.Mappings;
+using TaskManagerAPI.Infrastructure.Data;
 
 public class Program
 {
@@ -9,12 +11,14 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers();
-        builder.Services.AddOpenApi();
-
         var connection = builder.Configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connection));
+
+        builder.Services.AddControllers();
+        builder.Services.AddOpenApi();
+
+        builder.Services.AddAutoMapper(cfg => { }, typeof(TaskItemProfile).Assembly);
 
         var app = builder.Build();
 
