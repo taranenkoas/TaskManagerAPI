@@ -9,7 +9,7 @@ public class CreateTaskItemDTOValidator : AbstractValidator<CreateTaskItemDTO>
     {
         RuleFor(x => x.Title)
             .NotEmpty().WithMessage("Название задачи обязательно.")
-            .MaximumLength(5).WithMessage("Название не может быть длиннее 100 символов.");
+            .MaximumLength(200).WithMessage("Название не может быть длиннее 200 символов.");
 
         RuleFor(x => x.Description)
             .MaximumLength(500).WithMessage("Описание не может быть длиннее 500 символов.");

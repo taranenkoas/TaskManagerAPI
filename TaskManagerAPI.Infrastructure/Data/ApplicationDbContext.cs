@@ -1,9 +1,11 @@
 ﻿namespace TaskManagerAPI.Infrastructure.Data;
 
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TaskManagerAPI.Domain.Entities;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : IdentityDbContext<User>(options)
 {
     public DbSet<TaskItem> TaskItems { get; set; } = null!;
 
