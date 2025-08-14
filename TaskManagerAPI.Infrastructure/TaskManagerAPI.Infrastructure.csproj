@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TaskManagerAPI.Application\TaskManagerAPI.Application.csproj" />
     <ProjectReference Include="..\TaskManagerAPI.Domain\TaskManagerAPI.Domain.csproj" />
   </ItemGroup>
 

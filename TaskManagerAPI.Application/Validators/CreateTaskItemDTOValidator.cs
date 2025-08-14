@@ -2,6 +2,7 @@
 
 using FluentValidation;
 using TaskManagerAPI.Application.DTO;
+using TaskManagerAPI.Domain.Entities;
 
 public class CreateTaskItemDTOValidator : AbstractValidator<CreateTaskItemDTO>
 {

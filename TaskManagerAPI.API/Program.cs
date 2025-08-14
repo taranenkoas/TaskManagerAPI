@@ -14,6 +14,7 @@ using TaskManagerAPI.Application.Mappings;
 using TaskManagerAPI.Application.Validators;
 using TaskManagerAPI.Domain.Entities;
 using TaskManagerAPI.Infrastructure.Data;
+using TaskManagerAPI.Infrastructure.DependencyInjection;
 
 public class Program
 {
@@ -21,7 +22,6 @@ public class Program
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
             .Enrich.FromLogContext()
             .CreateLogger();
 
@@ -64,6 +64,8 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
                 };
             });
+
+            builder.Services.AddDataAccess();
 
             var app = builder.Build();
 
