@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using TaskManagerAPI.API.Filters;
+using TaskManagerAPI.API.Settings;
 using TaskManagerAPI.Application.DTO;
 using TaskManagerAPI.Application.Mappings;
 using TaskManagerAPI.Application.Validators;
@@ -82,7 +83,9 @@ public class Program
 
             builder.Services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = builder.Configuration.GetConnectionString("Redis");
+                var redisHost = builder.Configuration["Redis:Host"];
+                var redisPort = builder.Configuration["Redis:Port"];
+                options.Configuration = $"{redisHost}:{redisPort}";
             });
 
             builder.Services.AddSwaggerGen(c =>
@@ -114,6 +117,9 @@ public class Program
                     }
                 });
             });
+
+            builder.Services.Configure<RabbitMQSettings>(
+                builder.Configuration.GetSection("RabbitMQ"));
 
             var app = builder.Build();
 

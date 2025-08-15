@@ -12,9 +12,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=db;Database=TaskManagerDb;User=sa;Password=StrongPass123!;TrustServerCertificate=True;
       - Redis=redis:6379
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
     depends_on:
       - db
       - redis
+      - rabbitmq
     networks:
       - app-network
 
@@ -34,6 +38,17 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
     networks:
       - app-network
 

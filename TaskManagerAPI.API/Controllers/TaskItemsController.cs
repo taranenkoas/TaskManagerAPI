@@ -4,8 +4,12 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
+using TaskManagerAPI.API.Settings;
 using TaskManagerAPI.Application.DTO;
 using TaskManagerAPI.Application.Interfaces;
 using TaskManagerAPI.Domain.Entities;
@@ -13,12 +17,17 @@ using TaskManagerAPI.Domain.Entities;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class TaskItemsController(IUnitOfWork uow, IMapper mapper, IDistributedCache cache)
+public class TaskItemsController(
+    IUnitOfWork uow,
+    IMapper mapper,
+    IDistributedCache cache,
+    IOptions<RabbitMQSettings> rabbitMQSettings)
     : ControllerBase
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IMapper _mapper = mapper;
     private readonly IDistributedCache _cache = cache;
+    private readonly RabbitMQSettings _rabbitMQSettings = rabbitMQSettings.Value;
 
     private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -73,6 +82,33 @@ public class TaskItemsController(IUnitOfWork uow, IMapper mapper, IDistributedCa
 
         await _uow.TaskItems.AddAsync(task);
         await _uow.SaveChangesAsync();
+
+        var factory = new ConnectionFactory()
+        {
+            HostName = _rabbitMQSettings.HostName,
+            UserName = _rabbitMQSettings.UserName,
+            Password = _rabbitMQSettings.Password
+        };
+
+        await using var connection = await factory.CreateConnectionAsync();
+        await using var channel = await connection.CreateChannelAsync();
+
+        await channel.QueueDeclareAsync(
+            queue: "task_events",
+            durable: false,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
+
+        var message = $"TaskCreated: {task.Id} - {task.Title}";
+        var body = Encoding.UTF8.GetBytes(message);
+
+        await channel.BasicPublishAsync(
+            exchange: "",
+            routingKey: "task_events",
+            mandatory: false,
+            basicProperties: new BasicProperties(),
+            body: body);
 
         var resultDto = _mapper.Map<TaskItemDTO>(task);
         return CreatedAtAction(nameof(Get), new { id = task.Id }, resultDto);
