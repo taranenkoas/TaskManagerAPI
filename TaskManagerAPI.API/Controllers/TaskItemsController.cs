@@ -3,7 +3,9 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Security.Claims;
+using System.Text.Json;
 using TaskManagerAPI.Application.DTO;
 using TaskManagerAPI.Application.Interfaces;
 using TaskManagerAPI.Domain.Entities;
@@ -11,30 +13,49 @@ using TaskManagerAPI.Domain.Entities;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class TaskItemsController(IUnitOfWork uow, IMapper mapper) : ControllerBase
+public class TaskItemsController(IUnitOfWork uow, IMapper mapper, IDistributedCache cache)
+    : ControllerBase
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IMapper _mapper = mapper;
+    private readonly IDistributedCache _cache = cache;
 
     private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TaskItemDTO>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<TaskItemDTO>>> GetAll()
     {
         if (CurrentUserId is null)
             return Unauthorized();
 
-        var tasks = await _uow.TaskItems.GetByOwnerAsync(CurrentUserId, ct);
-        return Ok(_mapper.Map<IEnumerable<TaskItemDTO>>(tasks));
+        var cacheKey = $"task_{CurrentUserId}";
+        var cachedData = await _cache.GetStringAsync(cacheKey);
+
+        if (!string.IsNullOrEmpty(cachedData))
+            return Ok(JsonSerializer.Deserialize<List<TaskItemDTO>>(cachedData)!);
+
+        var tasks = await _uow.TaskItems.GetByOwnerAsync(CurrentUserId);
+        var tasksDto = _mapper.Map<IEnumerable<TaskItemDTO>>(tasks);
+
+        var jsonData = JsonSerializer.Serialize(tasksDto);
+        await _cache.SetStringAsync(
+            cacheKey,
+            jsonData,
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            });
+
+        return Ok(tasksDto);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<TaskItemDTO>> Get(int id, CancellationToken ct)
+    public async Task<ActionResult<TaskItemDTO>> Get(int id)
     {
         if (CurrentUserId is null)
             return Unauthorized();
 
-        var task = await _uow.TaskItems.GetByIdForOwnerAsync(id, CurrentUserId, ct);
+        var task = await _uow.TaskItems.GetByIdForOwnerAsync(id, CurrentUserId);
         if (task is null)
             return NotFound();
 
@@ -42,7 +63,7 @@ public class TaskItemsController(IUnitOfWork uow, IMapper mapper) : ControllerBa
     }
 
     [HttpPost]
-    public async Task<ActionResult<TaskItemDTO>> Create(CreateTaskItemDTO dto, CancellationToken ct)
+    public async Task<ActionResult<TaskItemDTO>> Create(CreateTaskItemDTO dto)
     {
         if (CurrentUserId is null)
             return Unauthorized();
@@ -50,44 +71,44 @@ public class TaskItemsController(IUnitOfWork uow, IMapper mapper) : ControllerBa
         var task = _mapper.Map<TaskItem>(dto);
         task.OwnerId = CurrentUserId;
 
-        await _uow.TaskItems.AddAsync(task, ct);
-        await _uow.SaveChangesAsync(ct);
+        await _uow.TaskItems.AddAsync(task);
+        await _uow.SaveChangesAsync();
 
         var resultDto = _mapper.Map<TaskItemDTO>(task);
         return CreatedAtAction(nameof(Get), new { id = task.Id }, resultDto);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, TaskItemDTO dto, CancellationToken ct)
+    public async Task<IActionResult> Update(int id, TaskItemDTO dto)
     {
         if (CurrentUserId is null)
             return Unauthorized();
         if (id != dto.Id)
             return BadRequest("ID в пути и в теле не совпадают.");
 
-        var task = await _uow.TaskItems.GetByIdForOwnerAsync(id, CurrentUserId, ct);
+        var task = await _uow.TaskItems.GetByIdForOwnerAsync(id, CurrentUserId);
         if (task is null)
             return NotFound();
 
         _mapper.Map(dto, task);
         _uow.TaskItems.Update(task);
-        await _uow.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync();
 
         return NoContent();
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    public async Task<IActionResult> Delete(int id)
     {
         if (CurrentUserId is null)
             return Unauthorized();
 
-        var task = await _uow.TaskItems.GetByIdForOwnerAsync(id, CurrentUserId, ct);
+        var task = await _uow.TaskItems.GetByIdForOwnerAsync(id, CurrentUserId);
         if (task is null)
             return NotFound();
 
         _uow.TaskItems.Remove(task);
-        await _uow.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync();
 
         return NoContent();
     }

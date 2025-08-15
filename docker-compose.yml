@@ -11,8 +11,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=db;Database=TaskManagerDb;User=sa;Password=StrongPass123!;TrustServerCertificate=True;
+      - Redis=redis:6379
     depends_on:
       - db
+      - redis
+    networks:
+      - app-network
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -23,6 +27,19 @@ services:
       ACCEPT_EULA: "Y"
     volumes:
       - sql_data:/var/opt/mssql
+    networks:
+      - app-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
 
 volumes:
   sql_data:
+
+networks:
+  app-network:
+    driver: bridge
