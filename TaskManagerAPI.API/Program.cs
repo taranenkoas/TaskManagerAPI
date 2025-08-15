@@ -33,8 +33,21 @@ public class Program
             var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "TaskManagerAPI";
 
             builder.Host.UseSerilog();
+
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connection));
+            {
+                var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+                if (connectionString == "InMemory")
+                {
+                    options.UseInMemoryDatabase("TestDb");
+                }
+                else
+                {
+                    options.UseSqlServer(connectionString);
+                }
+            });
+
             builder.Services.AddControllers(options =>
             {
                 options.Filters.Add<ValidationFilter<CreateTaskItemDTO>>();
