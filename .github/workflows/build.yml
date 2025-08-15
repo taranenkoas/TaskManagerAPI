@@ -2,26 +2,32 @@ name: Build and Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore TaskManagerAPI.sln
 
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build TaskManagerAPI.sln --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal --settings appsettings.CI.json
+        run: dotnet test TaskManagerAPI.sln --no-build --verbosity normal
+        env:
+          ASPNETCORE_ENVIRONMENT: CI
