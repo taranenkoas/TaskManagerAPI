@@ -28,6 +28,7 @@ jobs:
         run: dotnet build TaskManagerAPI.sln --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test TaskManagerAPI.sln --no-build --verbosity normal
-        env:
-          ASPNETCORE_ENVIRONMENT: CI
+            run: dotnet test TaskManagerAPI.sln --no-build --verbosity normal
+            env:
+                ASPNETCORE_ENVIRONMENT: CI
+                ConnectionStrings__DefaultConnection: InMemory
