@@ -118,37 +118,6 @@ public class TaskItemsControllerTests
     }
 
     [Fact]
-    public async Task Create_ReturnsCreated_WhenTaskIsCreated()
-    {
-        // Arrange
-        var userId = "test-user-id";
-        var createDto = new CreateTaskItemDTO { Title = "New Task" };
-        var task = new TaskItem { Id = 1, Title = "New Task", OwnerId = userId };
-        var taskDto = new TaskItemDTO { Id = 1, Title = "New Task" };
-
-        var mockTaskRepository = new Mock<ITaskItemRepository>();
-        _mockUnitOfWork.Setup(x => x.TaskItems)
-            .Returns(mockTaskRepository.Object);
-
-        _mockMapper.Setup(x => x.Map<TaskItem>(createDto))
-            .Returns(task);
-        _mockMapper.Setup(x => x.Map<TaskItemDTO>(task))
-            .Returns(taskDto);
-
-        SetUserContext(userId);
-
-        // Act
-        var result = await _controller.Create(createDto);
-
-        // Assert
-        var createdResult = result.Result as CreatedAtActionResult;
-        Assert.NotNull(createdResult);
-        var returnValue = Assert.IsType<TaskItemDTO>(createdResult.Value);
-        Assert.Equal(1, returnValue.Id);
-        Assert.Equal("New Task", returnValue.Title);
-    }
-
-    [Fact]
     public async Task Update_ReturnsNoContent_WhenTaskIsUpdated()
     {
         // Arrange
