@@ -27,10 +27,13 @@ jobs:
       - name: Build
         run: dotnet build TaskManagerAPI.sln --no-restore --configuration Release
 
-      - name: Test
+      - name: Build Tests
+        run: dotnet build TaskManagerAPI.Tests/TaskManagerAPI.Tests.csproj --no-restore --configuration Release
+
+      - name: Run Test
         run: |
-            dotnet vstest TaskManagerAPI.Tests/bin/Debug/net9.0/TaskManagerAPI.Tests.dll \
-            --logger "trx;LogFileName=test-results.trx"
+          dotnet vstest TaskManagerAPI.Tests/bin/Release/net9.0/TaskManagerAPI.Tests.dll \
+            --logger "console;verbosity=normal"
         env:
             ASPNETCORE_ENVIRONMENT: CI
             ConnectionStrings__DefaultConnection: InMemory
