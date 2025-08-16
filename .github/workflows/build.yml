@@ -29,9 +29,7 @@ jobs:
 
       - name: Test
         run: |
-            dotnet test TaskManagerAPI.Tests/TaskManagerAPI.Tests.csproj \
-            --no-build \
-            --verbosity normal \
+            dotnet vstest TaskManagerAPI.Tests/bin/Debug/net9.0/TaskManagerAPI.Tests.dll \
             --logger "trx;LogFileName=test-results.trx"
         env:
             ASPNETCORE_ENVIRONMENT: CI
