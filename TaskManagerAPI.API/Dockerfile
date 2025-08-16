@@ -7,6 +7,7 @@ COPY ["TaskManagerAPI.API/TaskManagerAPI.API.csproj", "TaskManagerAPI.API/"]
 COPY ["TaskManagerAPI.Application/TaskManagerAPI.Application.csproj", "TaskManagerAPI.Application/"]
 COPY ["TaskManagerAPI.Domain/TaskManagerAPI.Domain.csproj", "TaskManagerAPI.Domain/"]
 COPY ["TaskManagerAPI.Infrastructure/TaskManagerAPI.Infrastructure.csproj", "TaskManagerAPI.Infrastructure/"]
+COPY ["TaskManagerAPI.Tests/TaskManagerAPI.Tests.csproj", "TaskManagerAPI.Tests/"]
 
 RUN dotnet restore "TaskManagerAPI.API/TaskManagerAPI.API.csproj"
 
