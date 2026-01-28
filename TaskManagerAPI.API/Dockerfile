@@ -1,5 +1,5 @@
 # Этап сборки
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Копируем csproj и восстанавливаем зависимости
@@ -17,7 +17,7 @@ WORKDIR "/src/TaskManagerAPI.API"
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
 # Этап запуска
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "TaskManagerAPI.API.dll"]
